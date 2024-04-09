@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Interface</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.17/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+<div class="bg-white p-6 rounded shadow-lg w-1/3">
+    <div id="chat" class="h-80 overflow-auto p-3 space-y-2 bg-gray-50">
+        <!-- Chat messages will appear here -->
+    </div>
+    <div class="mt-4">
+        <input type="text" id="user_input" class="border p-2 w-full" placeholder="Ask something...">
+        <button onclick="sendMessage()"
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">Send
+        </button>
+    </div>
+</div>
+<script>
+    function sendMessage() {
+        let userInput = document.getElementById('user_input').value;
+        document.getElementById('user_input').value = ''; // Clear input field
+
+        displayMessage(userInput, 'user');
+
+        fetch('backend.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({message: userInput})
+        }).then(response => {
+            console.log("HTTP response code:", response.status); // Check HTTP response status
+            return response.json();
+        })
+            .then(data => {
+                console.log("Received data:", data); // Log data to see its actual structure
+                if (data.response && data.response.message) {
+                    displayMessage(data.response.message, 'bot'); // Display the main message
+
+                    // Check if 'titles' is present and has elements within the 'response' object
+                    if (data.response.titles && data.response.titles.length > 0) {
+                        let titlesHtml = data.response.titles.map(title => `<li>${title}</li>`).join('');
+                        displayMessage(`<ul>${titlesHtml}</ul>`, 'bot'); // Display titles as list
+                    }
+
+                    // Check if 'answer' is present within the 'response' object
+                    if (data.response.answer) {
+                        displayMessage("My answer based on the articles is: " + data.response.answer, 'bot'); // Display the answer
+                    }
+                } else {
+                    displayMessage("No valid response from server.", 'bot'); // Fallback message
+                }
+            })
+            .catch(error => {
+                console.error('Error during fetch operation:', error); // Log any errors that arise during fetch
+                displayMessage("Error retrieving data.", 'bot');
+            });
+    }
+
+    function displayMessage(message, sender) {
+        let chatDiv = document.getElementById('chat');
+        let messageDiv = document.createElement('div');
+        messageDiv.innerHTML = message; // Changed from textContent to innerHTML
+        messageDiv.className = sender === 'user' ? 'text-right p-2 rounded bg-blue-200 my-1' : 'text-left p-2 rounded bg-green-200 my-1';
+        chatDiv.appendChild(messageDiv);
+        chatDiv.scrollTop = chatDiv.scrollHeight; // Scroll to the bottom
+    }
+
+
+    // Display initial greeting message when the page loads
+    window.onload = function () {
+        displayMessage("Hello, my name is John and I am the chatbot here, feel free to ask me any question related to articles located on these websites and I will try to answer them the best way I can.", 'bot');
+        displayMessage("What`s your query?", 'bot');
+    };
+</script>
+</body>
+</html>
