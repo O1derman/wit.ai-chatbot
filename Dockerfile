@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM python:3.8-slim
+FROM python:3.12
 
 # Set environment variables:
 # Python won't try to write .pyc files on the import of source modules
