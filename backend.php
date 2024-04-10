@@ -2,7 +2,8 @@
 header('Content-Type: application/json');
 
 // API URL
-$url = 'http://localhost:5000/query';
+//$url = 'http://localhost:5000/query';
+$url = 'https://835e-94-112-34-89.ngrok-free.app/query';
 
 // Get JSON input and decode it
 $inputJSON = file_get_contents('php://input');
